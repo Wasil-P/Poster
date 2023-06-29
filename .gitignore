@@ -1,0 +1,6 @@
+.venv
+.idea
+_pycache_
+Poster/__pycache__/
+event_app/__pycache__/
+users/__pycache__/
