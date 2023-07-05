@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'event_app.apps.EventAppConfig',
     'users',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -59,8 +62,7 @@ ROOT_URLCONF = 'Poster.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,3 +129,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+from rest_framework_simplejwt.authentication import JWTAuthentication
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    }

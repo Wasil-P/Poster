@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from event_app.models import Event
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import get_object_or_404
 # from users.models import User
 
 
@@ -27,9 +29,10 @@ class EventModelSerializer(serializers.ModelSerializer):
 
 
 class UserModelSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = get_user_model
+        model = get_user_model()
         fields = ['username', 'password', 'email']
         read_only_fields = ['last_login',
                             'is_superuser',
@@ -39,3 +42,14 @@ class UserModelSerializer(serializers.ModelSerializer):
                             'is_active',
                             'data_joined',
                             'phone']
+
+    def create(self, validated_data):
+        validated_data["password"] = make_password(validated_data["password"])
+        return super().create(validated_data)
+
+
+class OneEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['name', 'meeting_time', 'users', 'description']
+        read_only_fields = ['name', 'meeting_time', 'description']

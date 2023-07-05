@@ -1,23 +1,37 @@
-from rest_framework import generics, mixins, permissions
-from rest_framework.response import Response
-from .serializers import EventSerializer, UserSerializer
+from urllib import request
+
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .serializers import EventSerializer, UserModelSerializer, OneEventSerializer
 from ..models import Event
 from users.models import User
+from .permissions import IsSuperUserOrRegister, IsAuthenticatedOrReadOnly
+from datetime import datetime
 
 
 class EventListAPIView(generics.ListAPIView):
     serializer_class = EventSerializer
-    queryset = Event.objects.all()
+    queryset = Event.objects.all()\
+    .filter(meeting_time__gte=datetime.now())\
+    .order_by("meeting_time")
 
 
 class UserCreateListAPIView(generics.ListCreateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserModelSerializer
+    queryset = User.objects.all()
+    permission_classes = [IsSuperUserOrRegister]
 
-    def get(self, request, *args, **kwargs):
-        queryset = User.objects.all()
-        if request.user.is_staff is False:
-            raise Exception("Не достаточно прав!")
-        return queryset
 
-    def post(self, request, *args, **kwargs):
-        pass
+class OneEventSubscriptionAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = OneEventSerializer
+    queryset = Event.objects.all()
+    lookup_url_kwarg = "events_id"
+    lookup_field = "id"
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class EventMyListAPIView(generics.ListAPIView):
+    serializer_class = EventSerializer
+    queryset = Event.objects.all()\
+                    .order_by("meeting_time")
+    permission_classes = [IsAuthenticated]
