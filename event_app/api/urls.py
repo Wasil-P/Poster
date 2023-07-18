@@ -18,12 +18,12 @@ Including another URLconf
 from django.urls import path, include
 from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+from django.views.decorators.cache import cache_page
 
 
 # api/
 urlpatterns = [
-    path('events/', views.EventListAPIView.as_view()),
+    path('events/', cache_page(300)(views.EventListAPIView.as_view())),
     path('events/my', views.EventMyListAPIView.as_view()),
     path("event/<int:events_id>", views.OneEventSubscriptionAPIView.as_view()),
     path('users/', views.UserCreateListAPIView.as_view()),

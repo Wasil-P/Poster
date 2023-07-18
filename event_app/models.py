@@ -11,3 +11,5 @@ class Event(models.Model):
     class Meta():
         db_table = "events"
         ordering = ["-meeting_time"]
+
+    # def send_new_event(self):

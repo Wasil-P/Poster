@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3y^9be&!le2lpnm2l7&8mf#&ahuays3g36ogx1ebdzf#$ffc9a'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG: bool = os.getenv("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = []
 
@@ -135,3 +137,31 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     }
+
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f'{REDIS_HOST}:{REDIS_PORT}',
+    }
+}
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
+
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_TASK_ROUTES = {
+    "event_app.tasks.send_reminder": {
+        "queue": "email",
+    },
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "reminder": {
+        "task": "event_app.tasks.send_reminder",
+        "schedule": crontab(minute="0", hour="1"),
+    }
+}
