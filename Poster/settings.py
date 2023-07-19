@@ -154,14 +154,24 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_ROUTES = {
-    "event_app.tasks.send_reminder": {
+    "event_app.tasks.check_event_24_hours": {
         "queue": "email",
     },
+    "event_app.tasks.check_event_6_hours": {
+        "queue": "email",
+    },
+    "event_app.tasks.send_user_statistic": {
+        "queue": "email",
+    }
 }
 
 CELERY_BEAT_SCHEDULE = {
-    "reminder": {
-        "task": "event_app.tasks.send_reminder",
+    "reminder_second": {
+        "task": "event_app.tasks.send_reminder_second()",
         "schedule": crontab(minute="0", hour="1"),
+    },
+    "reminder_first":  {
+        "task": "event_app.send_reminder_first()",
+        "schedule": crontab(minute="0", hour="24"),
     }
 }
