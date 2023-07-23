@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from celery.schedules import crontab
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +30,6 @@ DEBUG: bool = os.getenv("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = []
 
-from rest_framework_simplejwt.authentication import JWTAuthentication
 # Application definition
 
 INSTALLED_APPS = [
@@ -154,24 +154,21 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_ROUTES = {
-    "event_app.tasks.check_event_24_hours": {
+    "event_app.tasks.send_event": {
         "queue": "email",
     },
-    "event_app.tasks.check_event_6_hours": {
+    "event_app.tasks.send_new_event": {
         "queue": "email",
     },
-    "event_app.tasks.send_user_statistic": {
-        "queue": "email",
-    }
 }
 
 CELERY_BEAT_SCHEDULE = {
     "reminder_second": {
-        "task": "event_app.tasks.send_reminder_second()",
+        "task": "event_app.tasks.check_reminder_6_hour",
         "schedule": crontab(minute="0", hour="1"),
     },
     "reminder_first":  {
-        "task": "event_app.send_reminder_first()",
+        "task": "event_app.tasks.check_reminder_24_hour",
         "schedule": crontab(minute="0", hour="24"),
     }
 }
