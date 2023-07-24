@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from celery.schedules import crontab
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3y^9be&!le2lpnm2l7&8mf#&ahuays3g36ogx1ebdzf#$ffc9a'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG: bool = os.getenv("DJANGO_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -40,6 +42,9 @@ INSTALLED_APPS = [
     'event_app.apps.EventAppConfig',
     'users',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+
 ]
 
 AUTH_USER_MODEL = "users.User"
@@ -59,8 +64,7 @@ ROOT_URLCONF = 'Poster.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,3 +131,44 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    }
+
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f'{REDIS_HOST}:{REDIS_PORT}',
+    }
+}
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER")
+
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_TASK_ROUTES = {
+    "event_app.tasks.send_event": {
+        "queue": "email",
+    },
+    "event_app.tasks.send_new_event": {
+        "queue": "email",
+    },
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "reminder_second": {
+        "task": "event_app.tasks.check_reminder_6_hour",
+        "schedule": crontab(minute="0", hour="1"),
+    },
+    "reminder_first":  {
+        "task": "event_app.check_reminder_24_hour",
+        "schedule": crontab(minute="0", hour="24"),
+    }
+}
