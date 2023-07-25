@@ -20,15 +20,17 @@ def send_event(user, event_one, day):
 
 
 @shared_task(ignore_result=True)
-def send_new_event(user_id: int):
-    user_model = get_user_model()
-    try:
-        user = user_model.objects.get(id=user_id)
-    except user_model.DoesNotExist:
-        return
-
-    if not user.email and user.notify is True:
-        return
+def send_new_event(user, name, meeting_time, description):
+    email = EmailMultiAlternatives(
+        subject=f"Новое мероприятие: {name}",
+        to=[user.email],
+    )
+    email.attach_alternative(
+        f"Приглашаем вас посетить {name} {meeting_time}.<br>"
+        f"{description}.<br>"
+        "text/html",
+)
+    email.send()
 
 
 @shared_task(ignore_result=True)
