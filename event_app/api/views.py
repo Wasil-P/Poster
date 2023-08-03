@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 
 class EventListAPIView(generics.ListAPIView):
+    """Просмотр всех событий (которые еще не начались!)"""
     serializer_class = EventSerializer
     queryset = Event.objects.all()\
     .filter(meeting_time__gte=datetime.now())\
@@ -18,12 +19,15 @@ class EventListAPIView(generics.ListAPIView):
 
 
 class UserCreateListAPIView(generics.ListCreateAPIView):
+    """Просмотр всех зарегистрированных пользователей """
+    """Возможность регистрации на сайте"""
     serializer_class = UserModelSerializer
     queryset = User.objects.all()
     permission_classes = [IsSuperUserOrRegister]
 
 
 class OneEventSubscriptionAPIView(generics.CreateAPIView):
+    """Подписаться на конкретное событие."""
     serializer_class = EventModelSerializer
     queryset = Event.objects.all()
     lookup_url_kwarg = "events_id"
@@ -37,7 +41,9 @@ class OneEventSubscriptionAPIView(generics.CreateAPIView):
         serializer = self.get_serializer_class()(event)
         return Response(serializer.data)
 
+
 class EventMyListAPIView(generics.ListAPIView):
+    """Просмотр событий, на которые вы подписались"""
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
 

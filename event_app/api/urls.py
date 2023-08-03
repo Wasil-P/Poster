@@ -23,11 +23,11 @@ from django.views.decorators.cache import cache_page
 
 # api/
 urlpatterns = [
-    path('events/', cache_page(300)(views.EventListAPIView.as_view())),
-    path('events/my', views.EventMyListAPIView.as_view()),
-    path("event/<int:events_id>", views.OneEventSubscriptionAPIView.as_view()),
-    path('users/', views.UserCreateListAPIView.as_view()),
+    path('events/', views.EventListAPIView.as_view(), name="list_event_all"),
+    path('events/my', views.EventMyListAPIView.as_view(), name="my_list_event"),
+    path("event/<int:events_id>", views.OneEventSubscriptionAPIView.as_view(), name="one_event_view"),
+    path('users/', views.UserCreateListAPIView.as_view(), name="all_register_users"),
     path('auth/', include('djoser.urls')),
-    path('token/', TokenObtainPairView.as_view()),
-    path('token/refresh/', TokenRefreshView.as_view())
+    path('token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path('token/refresh/', TokenRefreshView.as_view(), name="token_refresh")
 ]

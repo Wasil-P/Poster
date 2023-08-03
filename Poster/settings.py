@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from celery.schedules import crontab
-from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
-
+SECRET_KEY = 'django-insecure-3y^9be&!le2lpnm2l7&8mf#&ahuays3g36ogx1ebdzf#$ffc9a'
+from rest_framework_simplejwt.authentication import JWTAuthentication
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG: bool = os.getenv("DJANGO_DEBUG", "0") == "1"
+DEBUG: bool = True
 
 ALLOWED_HOSTS = []
 
@@ -169,6 +169,6 @@ CELERY_BEAT_SCHEDULE = {
     },
     "reminder_first":  {
         "task": "event_app.check_reminder_24_hour",
-        "schedule": crontab(minute="0", hour="24"),
+        "schedule": crontab(minute="0", hour="23"),
     }
 }
