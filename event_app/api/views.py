@@ -29,7 +29,9 @@ class UserCreateListAPIView(generics.ListCreateAPIView):
 class OneEventSubscriptionAPIView(generics.CreateAPIView):
     """Подписаться на конкретное событие."""
     serializer_class = EventModelSerializer
-    queryset = Event.objects.all()
+    queryset = Event.objects.all()\
+    .filter(meeting_time__gte=datetime.now())\
+    .order_by("meeting_time")
     lookup_url_kwarg = "events_id"
     lookup_field = "id"
     permission_classes = [IsAuthenticated]
