@@ -67,17 +67,18 @@ class TestJWTAuth(APITestCase):
         data = resp.json()
         print(f'first_data - {data}')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        refresh_token_first = resp.json()["refresh"]
-        print(f'first_refresh - {refresh_token_first}')
+        refresh_token = resp.json()["refresh"]
+        print(f'first_refresh - {refresh_token}')
 
         resp = self.client.post("/api/token/refresh/",
-                                data={"refresh": refresh_token_first})
+                                data={"refresh": refresh_token})
         print(f"new_access - {resp.json()}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertIn("access", resp.json())
 
     #Проверка отсутствия возможности получить новый access-токен
     # с помощью старого refresh-токена
+    def test_token_refresh_blacklist(self):
         resp = self.client.post("/api/token/",
                                 data={
                                         "username": self.user.username,
@@ -85,15 +86,23 @@ class TestJWTAuth(APITestCase):
                                     })
 
         data = resp.json()
-        print(f'second_data - {data}')
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        refresh_token_second = resp.json()["refresh"]
-        print(f'second_refresh - {refresh_token_second}')
+        refresh_token = resp.json()["refresh"]
 
         resp = self.client.post("/api/token/refresh/",
-                                data={"refresh": refresh_token_first})
+                                data={"refresh": refresh_token})
         data = resp.json()
-        print()
-        print(f'new_access - {data}')
-        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertNotIn("access", resp.json())
+        print(f'first_data - {data}')
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+
+        resp = self.client.post("/api/token/refresh/",
+                                data={"refresh": refresh_token,
+                                        "detail": "Token is blacklisted",
+                                        "code": "token_not_valid"}
+        )
+
+        data = resp.json()
+        print(f'second_data - {data}')
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
